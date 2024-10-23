@@ -1,0 +1,222 @@
+---
+title: "Julia Implementation"
+author: "Ryan Ordonez"
+date: "2024-08-01"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(haven)
+#library(JuliaConnectoR)
+library(JuliaCall)
+```
+
+```{r}
+# Use the path to the julia.exe
+path_to_exe <- "/Users/ryan-/.julia/juliaup/julia-1.10.3+0.x64.w64.mingw32/bin"
+
+julia <- julia_setup(path_to_exe, force = TRUE)
+```
+
+```{r}
+# This will tell you where from you are running Julia while in R
+julia_command("pwd()")$out
+
+# make sure to put the FunctionsInJulia.jl file into that folder from the 
+# previous command
+```
+```{r}
+# this calls the Julia file so that we can check if it is running
+julia_source("mnwsvtr.jl")
+# make sure to comment out any example code
+
+# These will tell you T/F if the packages exist after being called
+julia_exists("VECHTEST")
+julia_exists("MNWTEST")
+```
+
+## Star example:
+```{r}
+# defining variables in R
+star_test <- read_dta("C:/Users/ryan-/OneDrive/Documents/vCarleton Summer RA Work/Julia Project/Tonghui Rcode/star_test.dta")
+XVARS= "aide_1 treadssk male nonwhite teach_nonwhite totexp1 freelunch brys2 brys3 brys5 sbq2 sbq3 sbq4 hdg2 hdg3 hdg4"
+XVARA= "small_1 treadssk male nonwhite teach_nonwhite totexp1 freelunch brys2 brys3 brys5 sbq2 sbq3 sbq4 hdg2 hdg3 hdg4"
+XVARB= "treadssk male nonwhite teach_nonwhite totexp1 freelunch brys2 brys3 brys5 sbq2 sbq3 sbq4  hdg2 hdg3 hdg4"
+
+y="treadss1"  
+xs="small_1"
+xa="aide_1" 
+  
+xb= "small_1 aide_1"
+df = star_test
+xv = xs
+cv = XVARS
+fc = 'newid'
+cc = 'clsid'
+
+B = as.integer(9)
+
+# putting the variables into julia
+julia_assign("df", star_test)
+julia_assign("y", y)
+julia_assign("xv", xs)
+julia_assign("cv", XVARS)
+julia_assign("fc", fc)
+julia_assign("cc", cc)
+julia_assign("B", B)
+
+# running Julia vechtest
+v1 <- julia_call("VECHTEST", star_test, y, xv, cv, fc, cc)
+v1
+
+julia_assign("XVARA", XVARA)
+julia_assign("xa",xa)
+
+# julia_assign("fc", "newid")
+# julia_assign("cc", "clsid")
+fc = "newid"
+cc = "clsid"
+
+ls4 = julia_call("MNWTEST", df,y,xa,XVARA,fc,cc,B)
+ls4
+
+# julia_assign("fc", "clsid")
+# julia_assign("cc", "schid1n")
+fc = "clsid"
+cc = "schid1n"
+ls6 = julia_call("MNWTEST",df,y,xa,XVARA,fc,cc,B)
+ls6
+```
+## IMTEST Testing - Star Example
+```{r}
+y="treadss1"
+
+xs="small_1"
+xa="aide_1"
+fr='schid1n'
+tm = as.integer(99)
+
+nulla='newid'
+nullb='clsid'
+alt1='schid1n'
+# 
+XVARSI="aide_1 treadssk male nonwhite teach_nonwhite totexp1 freelunch brys2 brys3 brys5 sbq2 sbq3 sbq4 hdg2 hdg3 hdg4"
+XVARAI="small_1 treadssk male nonwhite teach_nonwhite totexp1 freelunch brys2 brys3 brys5 sbq2 sbq3 sbq4 hdg2 hdg3 hdg4"
+fatr="schid1n"
+# 
+# 
+julia_assign("xa",xa)
+julia_assign("nulla",nulla)
+julia_assign("nullb",nullb)
+julia_assign("alt1",alt1)
+julia_assign("fr", fr)
+julia_assign("tm", tm)
+
+julia_assign("XVARSI",XVARSI)
+julia_assign("XVARAI",XVARAI)
+
+# 
+# 
+# 
+im1=julia_call("IMTEST", df, y, xs, XVARSI, fr, nulla, alt1, tm)
+
+im2=julia_call("IMTEST", df, y, xs, XVARSI, fr, nullb, alt1, tm)
+
+im3=julia_call("IMTEST", df, y, xa, XVARAI, fr, nulla, alt1, tm)
+
+im4=julia_call("IMTEST", df, y, xa, XVARAI, fr, nullb, alt1, tm)
+
+im1
+
+im2
+
+im3
+
+im4
+```
+
+
+# Hours Example
+
+```{r}
+# defining variables in R
+df2 <- read.csv("C:/Users/ryan-/OneDrive/Documents/vCarleton Summer RA Work/Julia Project/Tonghui Rcode/min_wage_teen_hours2.csv")
+XVARS= "black female factor(year) factor(age) factor(statefip) factor(educ)"
+
+y = "hours2"
+xs="mw"
+
+# df = df2
+# xv = xs
+# cv = XVARS
+null1 = "newid"
+null2 = "styear"
+null3 = "statefip"
+
+alt1 = "styear"
+alt2 = "statefip"
+alt3 = "region"
+
+B = as.integer(999)
+
+# putting the variables into julia
+julia_assign("df", df2)
+julia_assign("y", y)
+julia_assign("xv", xs)
+julia_assign("cv", XVARS)
+julia_assign("null1", null1)
+julia_assign("alt1", alt1)
+julia_assign("null2", null2)
+julia_assign("alt2", alt2)
+julia_assign("null3", null3)
+julia_assign("alt3", alt3)
+
+julia_assign("B", B)
+
+system.time({
+  mw1= julia_call("MNWTEST",df2,y,xs,XVARS,null1,alt1,B)
+mw2 = julia_call("MNWTEST",df2,y,xs,XVARS,null1,alt2,B)
+mw3= julia_call("MNWTEST",df2,y,xs,XVARS,null1,alt3,B)
+mw4= julia_call("MNWTEST",df2,y,xs,XVARS,null2,alt2,B)
+mw5= julia_call("MNWTEST",df2,y,xs,XVARS,null2,alt3,B)
+mw6= julia_call("MNWTEST",df2,y,xs,XVARS,null3,alt3,B)
+})
+
+
+mw1$tau
+mw1$MNW_P_1s
+mw1$bp1s
+
+mw2$tau
+mw2$MNW_P_1s
+mw2$bp1s
+
+mw3$tau
+mw3$MNW_P_1s
+mw3$bp1s
+
+mw4$tau
+mw4$MNW_P_1s
+mw4$bp1s
+
+mw5$tau
+mw5$MNW_P_1s
+mw5$bp1s
+
+mw6$tau
+mw6$MNW_P_1s
+mw6$bp1s
+```
+
+
+
+
+
+
+
+
+

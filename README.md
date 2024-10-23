@@ -16,7 +16,7 @@ The three main functions of the file are VECHTEST, MNWTEST, and IMTEST.
 The file also contains 4 utility functions and EXAMPLE CODE.
 
 The example code can be found at Line 632 and beyond. You will need to replace the 
-path to your .dta file.
+path to your .dta files in all instances.
 
 The Julia code also contains catches and throws that will alert the user if any 
 package is not installed and will AUTOMATICALLY install any needed packages.
